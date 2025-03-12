@@ -2,6 +2,9 @@
 
 namespace DungeonExplorer
 {
+    /// <summary>
+    /// room object in the game
+    /// </summary>
     public class Room
     {
         private string description;

@@ -2,6 +2,9 @@
 
 namespace DungeonExplorer
 {
+    /// <summary>
+    /// player object in the game
+    /// </summary>
     public class Player
     {
         public string Name { get; private set; }

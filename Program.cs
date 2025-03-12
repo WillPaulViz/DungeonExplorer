@@ -4,12 +4,14 @@ namespace DungeonExplorer
 {
     internal class Program
     {
-        // start of the program
-        static void Main(string[] args)
+        /// <summary>
+        /// start of the program
+        /// </summary>
+        static void Main()
         {
-            // set a static window size
-            Console.SetWindowSize(120, 30);
-            // start the game in a try-catch, in case there was unexpected error
+            /// <summary>
+            /// start the game in a try-catch, in case there was unexpected error
+            /// </summary>
             try
             {
                 Console.WriteLine("What username do you want?");
