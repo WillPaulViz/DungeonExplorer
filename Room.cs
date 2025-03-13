@@ -7,13 +7,19 @@ namespace DungeonExplorer
     /// </summary>
     public class Room
     {
-        private string description;
+        private string roomType;
         private List<string> items;
         private List<string> monsters;
 
-        public Room(string description, List<string> items, List<string> monsters)
+        /// <summary>
+        /// initialize entities in the room
+        /// </summary>
+        /// <param name="roomType">The type of room, eg normal/trasure</param>
+        /// /// <param name="items">List of items in the room</param>
+        /// /// <param name="monsters">List of monsters in the room</param>
+        public Room(string roomType, List<string> items, List<string> monsters)
         {
-            this.description = description;
+            this.roomType = roomType;
             this.items = items;
             this.monsters = monsters;
         }
@@ -33,9 +39,13 @@ namespace DungeonExplorer
         {
             return string.Join(", ", monsters);
         }
+
+        /// <summary>
+        /// adds all entities names into a string to print
+        /// </summary>
         public string GetDescription()
         {
-            string roomText = "This is a " + description + " Room.";
+            string roomText = "This is a " + roomType + " Room.";
             if (items.Count != 0)
             {
                 roomText += "\nContains items:" + ItemsContents();

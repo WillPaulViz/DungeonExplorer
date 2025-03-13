@@ -69,6 +69,9 @@ namespace DungeonExplorer
             bool playing = true;
             while (playing)
             {
+                /// <summary>
+                /// game loop for options
+                /// </summary>
                 Console.WriteLine($"\nWhat would you like to do {player.Name}?\n1. View room's description\n2. Display your status\n3. Pick up an item\n4. Move room\n5. End Game");
                 int.TryParse(Console.ReadLine(), out int choice);
                 Console.WriteLine();
