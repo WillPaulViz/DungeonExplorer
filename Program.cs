@@ -1,20 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DungeonExplorer
 {
     internal class Program
     {
-        static void Main(string[] args)
+        /// <summary>
+        /// start of the program
+        /// </summary>
+        static void Main()
         {
-            Game game = new Game();
-            game.Start();
-            Console.WriteLine("Waiting for your Implementation");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
+            /// <summary>
+            /// start the game in a try-catch, in case there was unexpected error
+            /// </summary>
+            try
+            {
+                Console.WriteLine("What username do you want?");
+                Game game = new Game(Console.ReadLine(),10);
+                game.Start();
+            }
+            catch ( Exception e) 
+            {
+                Console.WriteLine("Fatal error made game crash: "+e);
+            }
+            finally
+            {
+                Console.WriteLine("Goodbye!\nPress any key to exit...");
+                Console.ReadKey();
+            }
+            
         }
     }
 }
