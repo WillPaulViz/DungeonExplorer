@@ -1,28 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DungeonExplorer
 {
-    /// <summary>
-    /// player object in the game
-    /// </summary>
-    public class Player
+    public class Player : Entity
     {
-        public string Name { get; private set; }
-        public int Health { get; private set; }
-        private List<string> inventory = new List<string>();
-
-        public Player(string name, int health) 
+        public Player(string name, int health, int damage) : base(name, health, damage) { }
+        public override void GetDescription()
         {
-            Name = name;
-            Health = health;
-        }
-        public void PickUpItem(string item)
-        {
-            inventory.Add(item);
-        }
-        public string InventoryContents()
-        {
-            return string.Join(", ", inventory);
+            Console.WriteLine($"Player: {Name}, Health: {Health}, Damage: {Damage}");
+            InventoryContents();
         }
     }
 }

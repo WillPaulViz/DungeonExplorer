@@ -1,60 +1,37 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DungeonExplorer
 {
-    /// <summary>
-    /// room object in the game
-    /// </summary>
     public class Room
     {
-        private string roomType;
-        private List<string> items;
-        private List<string> monsters;
+        public string Name { get; private set; }
+        public List<Monster> Monsters { get; private set; }
 
-        /// <summary>
-        /// initialize entities in the room
-        /// </summary>
-        /// <param name="roomType">The type of room, eg normal/trasure</param>
-        /// /// <param name="items">List of items in the room</param>
-        /// /// <param name="monsters">List of monsters in the room</param>
-        public Room(string roomType, List<string> items, List<string> monsters)
+        public Room(string name, List<Monster> monsters)
         {
-            this.roomType = roomType;
-            this.items = items;
-            this.monsters = monsters;
+            Name = name;
+            Monsters = monsters;
         }
-        public List<string> GetItems()
+        public void MonstersContents()
         {
-            return items;
-        }
-        public bool DeleteItem(string item)
-        {
-            return items.Remove(item);
-        }
-        public string ItemsContents()
-        {
-            return string.Join(", ", items);
-        }
-        public string MonstersContents()
-        {
-            return string.Join(", ", monsters);
-        }
-
-        /// <summary>
-        /// adds all entities names into a string to print
-        /// </summary>
-        public string GetDescription()
-        {
-            string roomText = "This is a " + roomType + " Room.";
-            if (items.Count != 0)
+            if (Monsters.Count != 0)
             {
-                roomText += "\nContains items:" + ItemsContents();
+                foreach (Monster monster in Monsters)
+                {
+                    monster.GetDescription();
+                    monster.MakeNoise();
+                }
             }
-            if (monsters.Count != 0)
+            else
             {
-                roomText += "\nContains monsters:" + MonstersContents();
+                Console.WriteLine("No Monsters");
             }
-            return roomText;
+        }
+        public void GetDescription()
+        {
+            Console.WriteLine(Name);
+            MonstersContents();
         }
     }
 }
