@@ -3,35 +3,16 @@ using System.Collections.Generic;
 
 namespace DungeonExplorer
 {
-    public class Room
+    public class Room : Entity
     {
-        public string Name { get; private set; }
-        public List<Monster> Monsters { get; private set; }
-
-        public Room(string name, List<Monster> monsters)
+        public Room(string name, List<Entity> monsters):base(name)
         {
-            Name = name;
-            Monsters = monsters;
+            Inventory = monsters;
         }
-        public void MonstersContents()
-        {
-            if (Monsters.Count != 0)
-            {
-                foreach (Monster monster in Monsters)
-                {
-                    monster.GetDescription();
-                    monster.MakeNoise();
-                }
-            }
-            else
-            {
-                Console.WriteLine("No Monsters");
-            }
-        }
-        public void GetDescription()
+        public override void GetDescription()
         {
             Console.WriteLine(Name);
-            MonstersContents();
+            InventoryContents();
         }
     }
 }
