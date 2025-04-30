@@ -5,7 +5,7 @@ namespace DungeonExplorer
 {
     public class Zombie : Character
     {
-        public Zombie(string name, int health, int damage) : base(name, health, damage) { }
+        public Zombie(string name, int health, int damage, List<Entity> entity) : base(name, health, damage, entity) { }
         public override void GetDescription()
         {
             Console.WriteLine($"Creeper: {Name}, Health: {Health}, Damage: {Damage}");
@@ -14,7 +14,7 @@ namespace DungeonExplorer
     }
     public class Creeper : Character
     {
-        public Creeper(string name, int health, int damage) : base(name, health, damage) { }
+        public Creeper(string name, int health, int damage, List<Entity> entity) : base(name, health, damage, entity) { }
         public override void GetDescription()
         {
             Console.WriteLine($"Zombie: {Name}, Health: {Health}, Damage: {Damage}");

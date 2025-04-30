@@ -5,10 +5,7 @@ namespace DungeonExplorer
 {
     public class Room : Entity
     {
-        public Room(string name, List<Entity> monsters):base(name)
-        {
-            Inventory = monsters;
-        }
+        public Room(string name) : base(name) { }
         public override void GetDescription()
         {
             Console.WriteLine(Name);

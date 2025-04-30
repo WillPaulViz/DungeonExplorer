@@ -11,11 +11,16 @@ namespace DungeonExplorer
         public int Health { get; protected set; }
         public int MaxHealth { get; protected set; }
         public int Damage { get; protected set; }
-        public Character(string name, int health, int damage) : base(name)
+        public Character(string name, int health, int damage, List<Entity> entity = null) : base(name, entity)
         {
             Health = health;
             MaxHealth = health;
             Damage = damage;
         }
+        public void TakeDMG(int damage)
+        {
+            Health -= damage;
+        }
+
     }
 }

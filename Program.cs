@@ -13,28 +13,29 @@ namespace DungeonExplorer
 
                 while (true)
                 {
-                    while (true)
-                    {
-                        Console.Write("Enter username (No Null/Space) > ");
-                        username = Console.ReadLine();
+                    Console.Write("Enter username (No Null/Space) > ");
+                    username = Console.ReadLine();
 
-                        if (!string.IsNullOrEmpty(username))
-                        {
-                            break;
-                        }
-
-                        Console.WriteLine("Must input a valid string");
-                    }
-
-                    Console.Write("Enter room ammount, (Greater Than 0) ? > ");
-                    var roomStr = Console.ReadLine();
-
-                    if (int.TryParse(roomStr, out roomInt) && roomInt > 0)
+                    if (!string.IsNullOrEmpty(username))
                     {
                         break;
                     }
 
-                    Console.WriteLine("Must input a valid integer");
+                    Console.WriteLine("Choose a valid option");
+                }
+
+                while (true)
+                {
+
+                    Console.Write("Enter room ammount, (Greater Than 0) ? > ");
+                    int.TryParse(Console.ReadLine(), out roomInt);
+
+                    if (roomInt > 0)
+                    {
+                        break;
+                    }
+
+                    Console.WriteLine("Choose a valid option");
                 }
 
                 Player player = new Player(username, 100, 25);

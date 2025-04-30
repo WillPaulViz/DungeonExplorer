@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 
 namespace DungeonExplorer
 {
@@ -21,44 +23,44 @@ namespace DungeonExplorer
         }
         private void InitializeGame()
         {
-            List<Item> itemTemplate = new List<Item>
+            Random rng = new Random();
+            List<Entity> itemTemplate = new List<Entity>
             {
                 new Weapon("Sword", 30),
                 new Weapon("Gun", 50),
                 new Potion("Apple", 10),
                 new Potion("Steak", 30)
             };
-            List<Character> monsterTemplate = new List<Character>
+            
+            List<Entity> monsterTemplate = new List<Entity>
             {
-                new Zombie("Dr. Dre", 50,10),
-                new Zombie("Tyler", 125,25),
-                new Creeper("Fredrick", 75,15),
-                new Creeper("Dan the Man", 100,20)
+                new Zombie("Luca", 50,10, GetRandomItem(itemTemplate,2)),
+                new Zombie("Tyler", 125,25, GetRandomItem(itemTemplate,1)),
+                new Creeper("Fredrick", 75,15, GetRandomItem(itemTemplate,4)),
+                new Creeper("DanTheMan", 100,20, GetRandomItem(itemTemplate,3))
+
             };
-            string[] roomNames = { "A cold room", "A dark room", "A cave system", "A room" };
 
-            Random r = new Random();
-            int rPlayerItemAmmount = r.Next(0, 5);
-
-            for (int item = 0; item < rPlayerItemAmmount; item++)
+            List<Entity> GetRandomItem(List<Entity> source, int count)
             {
-                Player.Inventory.Add(itemTemplate[r.Next(0, itemTemplate.Count)]);
+                return source.OrderBy(x => rng.Next()).Take(count).ToList();
+            }
+
+            string[] roomNames = { "A cold room", "A dark room", "A cave system", "A small room" };
+
+            for (int item = 0; item < 1; item++)
+            {
+                Player.AddToInv(itemTemplate[rng.Next(itemTemplate.Count)]);
             }
 
             for (int room = 0; room < MaxRooms; room++)
             {
-                int rMonsterSpawnAmmount = r.Next(0, 4);
-                int rMonsterItemAmmount = r.Next(0, 3);
-                List<Entity> monsters = new List<Entity>();
-                for (int monster = 0; monster < rMonsterSpawnAmmount; monster++)
-                {
-                    monsters.Add(monsterTemplate[r.Next(0, monsterTemplate.Count)]);
-                    for (int y = 0; y < rMonsterItemAmmount; y++)
-                    {
-                        monsters[y].Inventory.Add(itemTemplate[r.Next(0, itemTemplate.Count)]);
-                    }
-                }
-                MapRooms.Add(new Room(roomNames[r.Next(0, roomNames.Length)], monsters));
+                MapRooms.Add(new Room(roomNames[rng.Next(roomNames.Length)]));
+            }
+
+            for (int room = 0; room < MaxRooms; room++)
+            {
+                MapRooms[room].AddToInv(monsterTemplate[rng.Next(monsterTemplate.Count)]);
             }
         }
         private void MoveRooms()
@@ -99,16 +101,70 @@ namespace DungeonExplorer
                 }
             }
         }
-        private void BattleStart()
+        private void EnterRoom()
         {
+            Room room = MapRooms[CurrentRoom];
+            Console.WriteLine("You have entered the room");
+            room.GetDescription();
 
-        }
+            while (true)
+            {
+                Console.Write("Who would you want to attack? (Select a valid name) > ");
+                string monsterName = Console.ReadLine();
+
+                //List<Entity> monsters = MapRooms[CurrentRoom].ReturnInventory();
+                Entity monsterResult = room.ReturnInventoryEntity(monsterName);
+                if (monsterResult != null){
+                    Player.GetDescription();
+                    Console.Write("What item do you want to use? (Select a valid name) > ");
+                    string itemName = Console.ReadLine();
+
+                    Entity itemResult = Player.ReturnInventoryEntity(monsterName);
+                    if (itemResult != null)
+                    {
+                    }
+                    else
+                    {
+                    }
+                }
+                else {
+                    Console.WriteLine("Choose a valid option");
+                    continue;
+                }
+
+                    break;
+            }
+
+
+            return;
+
+            //if (items.Count != 0)
+            //{
+            //    Console.WriteLine($"There are {items.Count} items, which do you want to pick up: {allRooms[currentRoom].ItemsContents()}");
+            //    string selectedItem = Console.ReadLine();
+
+            //    bool found = false;
+            //    foreach (string item in items)
+            //    {
+            //        if (selectedItem.Equals(item, StringComparison.OrdinalIgnoreCase))
+            //        {
+            //            found = true;
+            //            allRooms[currentRoom].DeleteItem(item);
+            //            player.PickUpItem(item);
+            //            break;
+            //        }
+            //    }
+            //    if (!found)
+            //    {
+            //        Console.WriteLine("Choose a valid option");
+            //    }
+            }
         public void Start()
         {
             bool playing = true;
             while (playing)
             {
-                Console.WriteLine($"\nWhat would you like to do {Player.Name}?\n1. View room's description\n2. Display your status\n3. Pick up an item\n4. Move room\n5. End Game");
+                Console.WriteLine($"\nWhat would you like to do {Player.Name}?\n1. View room's description\n2. Display your status\n3. Enter Room\n4. Move Rooms\n5. End Game");
                 int.TryParse(Console.ReadLine(), out int choice);
                 Console.WriteLine();
                 switch (choice)
@@ -122,7 +178,7 @@ namespace DungeonExplorer
                         break;
 
                     case 3:
-                        BattleStart();
+                        EnterRoom();
                         break;
 
                     case 4:

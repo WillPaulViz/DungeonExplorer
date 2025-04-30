@@ -5,7 +5,8 @@ namespace DungeonExplorer
     public abstract class Item : Entity
     {
         public Item(string name) : base(name){}
-    }
+        public virtual int UseItem(){ return 0; }
+        }
     public class Weapon : Item
     {
         public int Damage { get; private set; }
@@ -16,6 +17,10 @@ namespace DungeonExplorer
         public override void GetDescription()
         {
             Console.WriteLine($"Weapon: {Name}, Damage: {Damage}");
+        }
+        public override int UseItem()
+        {
+            return Damage;
         }
     }
     public class Potion : Item
@@ -28,6 +33,10 @@ namespace DungeonExplorer
         public override void GetDescription()
         {
             Console.WriteLine($"Potion: {Name}, Health: {Health}");
+        }
+        public override int UseItem()
+        {
+            return -Health;
         }
     }
 }
