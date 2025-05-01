@@ -1,157 +1,223 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 
 namespace DungeonExplorer
 {
-    /// <summary>
-    /// set game class variables
-    /// </summary>
-    internal class Game
+    public class Game
     {
-        private Player player;
-        private List<Room> allRooms;
-        private int maxRooms;
-        private int currentRoom;
-        private string[] roomNames = { "Normal", "Treasure" };
-        private string[] itemNames = { "+10HP", "Sword", "Sheild", "Magic Rune" };
-        private string[] monsterNames = { "Zombie", "Skeleton", "Creeper", "Warden" };
+        public int CurrentRoom;
+        public int MaxRooms;
+        public List<Room> MapRooms = new List<Room>();
+        public Player Player;
 
-        /// <summary>
-        /// initialize game class
-        /// </summary>
-        /// <param name="name">The name of the player</param>
-        /// <param name="rooms">The ammount of rooms in the game</param>
-        public Game(string name, int rooms)
+        public Game(Player player, int rooms)
         {
-            player = new Player(name, 100);
-            allRooms = new List<Room>();
-            maxRooms = rooms;
-            currentRoom = 0;
-
-            Debug.Assert(0 < maxRooms, $"{maxRooms} rooms were generated");
-
-            Random r = new Random();
-
-            /// <summary>
-            /// generate a set ammount of random rooms
-            /// </summary>
-            for (int x = 0; x < rooms; x++)
+            Player = player;
+            MaxRooms = rooms;
+            CurrentRoom = 0;
+            InitializeGame();
+        }
+        private void InitializeGame()
+        {
+            Random rng = new Random();
+            
+            List<Character> monsterTemplate = new List<Character>
             {
+                new Zombie("Luca", 50,10, Entity.GetRandomItems()),
+                new Zombie("Tyler", 125,25, Entity.GetRandomItems()),
+                new Creeper("Fredrick", 75,15, Entity.GetRandomItems()),
+                new Creeper("DanTheMan", 100,20, Entity.GetRandomItems())
+            };
 
-                string roomName = roomNames[r.Next(0, roomNames.Length - 1)];
+            string[] roomNames = { "A cold room", "A dark room", "A cave system", "A small room" };
 
-                int rAmmount = 5;
-                int rItemAmmount = r.Next(0, rAmmount);
-                int rMonsterAmmount = r.Next(0, rAmmount);
+            for (int item = 0; item < rng.Next(1,4); item++)
+            {
+                Player.AddToInv(Entity.GetRandomItems()[rng.Next(Entity.GetRandomItems().Count)]);
+            }
 
-                List<string> items = new List<string>();
-                List<string> monsters = new List<string>();
+            for (int room = 0; room < MaxRooms; room++)
+            {
+                MapRooms.Add(new Room(roomNames[rng.Next(roomNames.Length)]));
+            }
 
-                for (int y = 0; y< rItemAmmount; y++)
-                {
-                    items.Add(itemNames[r.Next(0, itemNames.Length - 1)]);
-                }
-                for (int z = 0; z < rMonsterAmmount; z++)
-                {
-                    monsters.Add(monsterNames[r.Next(0, monsterNames.Length - 1)]);
-                }
-
-                allRooms.Add(new Room(roomName, items, monsters));
+            for (int room = 0; room < MaxRooms; room++)
+            {
+                MapRooms[room].AddToInv(monsterTemplate[rng.Next(monsterTemplate.Count)]);
             }
         }
-        /// <summary>
-        /// main game logic
-        /// </summary>
+        private void MoveRooms()
+        {
+            string movementText = "You can";
+            if (MaxRooms == 1)
+            {
+                movementText += "not move anywhere";
+                Console.WriteLine(movementText);
+            }
+            else
+            {
+                bool moveLeft = false;
+                bool moveRight = false;
+                if (CurrentRoom != 0 && MaxRooms != 1)
+                {
+                    movementText += ", move to the left";
+                    moveLeft = true;
+                }
+                if (CurrentRoom != MaxRooms - 1 && MaxRooms != 1)
+                {
+                    movementText += ", move to the right";
+                    moveRight = true;
+                }
+                Console.WriteLine($"{movementText}, where do you want to go?");
+                string movement = CleanInput();
+                if ("left" == movement && moveLeft)
+                {
+                    CurrentRoom -= 1;
+                }
+                else if ("right" == movement && moveRight)
+                {
+                    CurrentRoom += 1;
+                }
+                else
+                {
+                    Console.WriteLine("Choose a valid option");
+                }
+            }
+        }
+        private string CleanInput()
+        {
+            string cleaned = "";
+            foreach (char c in Console.ReadLine())
+            {
+                if (!char.IsWhiteSpace(c))
+                {
+                    cleaned += char.ToLower(c);
+                }
+            }
+            return cleaned;
+        }
+        private void EnterRoom()
+        {
+            Console.WriteLine("You have entered the room");
+
+            Random rng = new Random();
+            while (true)
+            {
+
+                MapRooms[CurrentRoom].GetDescription();
+                Console.Write("\nWho would you want to attack? (Select a valid name) > ");
+                string monsterName = CleanInput();
+
+                int monsterIndex = MapRooms[CurrentRoom].ReturnInventoryIndex(monsterName);
+                if (monsterIndex != -1)
+                {
+                    Console.WriteLine();
+                    Player.GetDescription();
+                    Console.Write("What item do you want to use? (Choose an item or 'random'/'hands'/'exit') > ");
+                    string itemName = CleanInput();
+                    int itemIndex = Player.ReturnInventoryIndex(itemName);
+                    int damage;
+
+                    if (itemName == "exit")
+                    {
+                        break;
+                    }
+                    else if (itemName == "hands")
+                    {
+                        damage = Player.Damage;
+
+                    }
+                    else if (itemName == "random")
+                    {
+                        Player.AddToInv(Entity.GetRandomItems()[0]);
+                        Console.WriteLine("You got a new item");
+                        break;
+                    }
+                    else if (itemIndex != -1 && Player.Inventory.Count != 0)
+                    {
+                        damage = ((Item)Player.Inventory[itemIndex]).GetDMG();
+                        Player.DelFromInvIndex(itemIndex);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Choose a valid option");
+                        continue;
+                    }
+
+
+                    if (damage < 0)
+                    {
+                        Player.TakeDMG(damage);
+                        Console.WriteLine($"You healed {-damage} HP");
+                    }
+                    else
+                    {
+                        ((Character)MapRooms[CurrentRoom].Inventory[monsterIndex]).TakeDMG(damage);
+                        Console.WriteLine($"You dealt {damage} damage");
+                    }
+
+
+                    int randomMonster = rng.Next(MapRooms[CurrentRoom].Inventory.Count);
+                    Character monster = (Character)MapRooms[CurrentRoom].Inventory[randomMonster];
+
+                    Console.WriteLine($"A {monster.Name} comes back with a random item.");
+                    if (monster.Inventory.Count != 0)
+                    {
+                        damage = ((Item)monster.Inventory[rng.Next(monster.Inventory.Count)]).GetDMG();
+                        MapRooms[CurrentRoom].Inventory[randomMonster].DelFromInvIndex(itemIndex);
+                    }
+                    else
+                    {
+                        damage = ((Character)MapRooms[CurrentRoom].Inventory[monsterIndex]).Damage;
+                    }
+                    if (damage < 0)
+                    {
+                        ((Character)MapRooms[CurrentRoom].Inventory[monsterIndex]).TakeDMG(damage);
+                        Console.Write($"Monster healed {-damage} HP");
+                    }
+                    else
+                    {
+                        Player.TakeDMG(damage);
+                        Console.WriteLine($"You took {damage} HP");
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("Choose a valid option");
+                    continue;
+                }
+
+                return;
+            }
+        }
         public void Start()
         {
             bool playing = true;
             while (playing)
             {
-                /// <summary>
-                /// game loop for options
-                /// </summary>
-                Console.WriteLine($"\nWhat would you like to do {player.Name}?\n1. View room's description\n2. Display your status\n3. Pick up an item\n4. Move room\n5. End Game");
+                Console.WriteLine($"\nWhat would you like to do {Player.Name}?\nTo use items go into a room\n\n1. Display your status\n2. View room's description\n3. Enter Room\n4. Move Rooms\n5. End Game");
                 int.TryParse(Console.ReadLine(), out int choice);
                 Console.WriteLine();
                 switch (choice)
                 {
                     case 1:
-                        Console.WriteLine(allRooms[currentRoom].GetDescription());
+                        Player.GetDescription();
                         break;
 
                     case 2:
-                        Console.WriteLine($"Health: {player.Health}\nInventory: {player.InventoryContents()}");
+                        MapRooms[CurrentRoom].GetDescription();
                         break;
 
                     case 3:
-                        List<string> items = allRooms[currentRoom].GetItems();
-                        if (items.Count != 0)
-                        {
-                            Console.WriteLine($"There are {items.Count} items, which do you want to pick up: {allRooms[currentRoom].ItemsContents()}");
-                            string selectedItem = Console.ReadLine();
-
-                            bool found = false;
-                            foreach (string item in items)
-                            {
-                                if (selectedItem.Equals(item, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    found = true;
-                                    allRooms[currentRoom].DeleteItem(item);
-                                    player.PickUpItem(item);
-                                    break;
-                                }
-                            }
-                            if (!found)
-                            {
-                                Console.WriteLine("Choose a valid option");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("There are no items in this room");
-                        }
+                        EnterRoom();
                         break;
 
                     case 4:
-                        string movementText = "You can";
-                        if (maxRooms == 1)
-                        {
-                            movementText = "not move anywhere";
-                            Console.WriteLine(movementText);
-                        }
-                        else
-                        {
-                            bool left = false;
-                            bool right = false;
-                            if (currentRoom != 0 && maxRooms != 1)
-                            {
-                                movementText += ", move to the left";
-                                left = true;
-                            }
-                            if (currentRoom != maxRooms - 1 && maxRooms != 1)
-                            {
-                                movementText += ", move to the right";
-                                right = true;
-                            }
-
-                            Console.WriteLine($"{movementText}, where do you want to go?");
-                            string movement = Console.ReadLine();
-
-                            if ("left".Equals(movement, StringComparison.OrdinalIgnoreCase) && left)
-                            {
-                                currentRoom -= 1;
-                            }
-                            else if ("right".Equals(movement, StringComparison.OrdinalIgnoreCase) && right)
-                            {
-                                currentRoom += 1;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Choose a valid option");
-                            }
-                        }
+                        MoveRooms();
                         break;
 
                     case 5:
