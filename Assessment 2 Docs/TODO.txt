@@ -1,0 +1,3 @@
+do error checking on variables that can crash
+testing class
+DO report

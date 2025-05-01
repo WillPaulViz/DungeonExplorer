@@ -8,10 +8,10 @@ namespace DungeonExplorer
 {
     internal class Game
     {
-        public int CurrentRoom { get; private set; }
-        public int MaxRooms { get; private set; }
-        public List<Room> MapRooms { get; private set; } = new List<Room>();
-        public Player Player { get; private set; }
+        public int CurrentRoom;
+        public int MaxRooms;
+        public List<Room> MapRooms = new List<Room>();
+        public Player Player;
 
         public Game(Player player, int rooms)
         {
@@ -24,33 +24,20 @@ namespace DungeonExplorer
         private void InitializeGame()
         {
             Random rng = new Random();
-            List<Entity> itemTemplate = new List<Entity>
-            {
-                new Weapon("Sword", 30),
-                new Weapon("Gun", 50),
-                new Potion("Apple", 10),
-                new Potion("Steak", 30)
-            };
             
-            List<Entity> monsterTemplate = new List<Entity>
+            List<Character> monsterTemplate = new List<Character>
             {
-                new Zombie("Luca", 50,10, GetRandomItem(itemTemplate,2)),
-                new Zombie("Tyler", 125,25, GetRandomItem(itemTemplate,1)),
-                new Creeper("Fredrick", 75,15, GetRandomItem(itemTemplate,4)),
-                new Creeper("DanTheMan", 100,20, GetRandomItem(itemTemplate,3))
-
+                new Zombie("Luca", 50,10, Entity.GetRandomItems()),
+                new Zombie("Tyler", 125,25, Entity.GetRandomItems()),
+                new Creeper("Fredrick", 75,15, Entity.GetRandomItems()),
+                new Creeper("DanTheMan", 100,20, Entity.GetRandomItems())
             };
-
-            List<Entity> GetRandomItem(List<Entity> source, int count)
-            {
-                return source.OrderBy(x => rng.Next()).Take(count).ToList();
-            }
 
             string[] roomNames = { "A cold room", "A dark room", "A cave system", "A small room" };
 
-            for (int item = 0; item < 1; item++)
+            for (int item = 0; item < rng.Next(1,4); item++)
             {
-                Player.AddToInv(itemTemplate[rng.Next(itemTemplate.Count)]);
+                Player.AddToInv(Entity.GetRandomItems()[rng.Next(Entity.GetRandomItems().Count)]);
             }
 
             for (int room = 0; room < MaxRooms; room++)
@@ -86,12 +73,12 @@ namespace DungeonExplorer
                     moveRight = true;
                 }
                 Console.WriteLine($"{movementText}, where do you want to go?");
-                string movement = Console.ReadLine();
-                if ("left".Equals(movement, StringComparison.OrdinalIgnoreCase) && moveLeft)
+                string movement = CleanInput();
+                if ("left" == movement && moveLeft)
                 {
                     CurrentRoom -= 1;
                 }
-                else if ("right".Equals(movement, StringComparison.OrdinalIgnoreCase) && moveRight)
+                else if ("right" == movement && moveRight)
                 {
                     CurrentRoom += 1;
                 }
@@ -101,80 +88,126 @@ namespace DungeonExplorer
                 }
             }
         }
+        private string CleanInput()
+        {
+            string cleaned = "";
+            foreach (char c in Console.ReadLine())
+            {
+                if (!char.IsWhiteSpace(c))
+                {
+                    cleaned += char.ToLower(c);
+                }
+            }
+            return cleaned;
+        }
         private void EnterRoom()
         {
-            Room room = MapRooms[CurrentRoom];
             Console.WriteLine("You have entered the room");
-            room.GetDescription();
 
+            Random rng = new Random();
             while (true)
             {
-                Console.Write("Who would you want to attack? (Select a valid name) > ");
-                string monsterName = Console.ReadLine();
 
-                //List<Entity> monsters = MapRooms[CurrentRoom].ReturnInventory();
-                Entity monsterResult = room.ReturnInventoryEntity(monsterName);
-                if (monsterResult != null){
+                MapRooms[CurrentRoom].GetDescription();
+                Console.Write("\nWho would you want to attack? (Select a valid name) > ");
+                string monsterName = CleanInput();
+
+                int monsterIndex = MapRooms[CurrentRoom].ReturnInventoryIndex(monsterName);
+                if (monsterIndex != -1){
+                    Console.WriteLine();
                     Player.GetDescription();
-                    Console.Write("What item do you want to use? (Select a valid name) > ");
-                    string itemName = Console.ReadLine();
+                    Console.Write("What item do you want to use? (Choose an item or 'random'/'hands'/'exit') > ");
+                    string itemName = CleanInput();
+                    int itemIndex = Player.ReturnInventoryIndex(itemName);
+                    int damage;
 
-                    Entity itemResult = Player.ReturnInventoryEntity(monsterName);
-                    if (itemResult != null)
+                    if (itemName == "exit") 
                     {
+                        break;
+                    }
+                    else if (itemName == "hands")
+                    {
+                        damage = Player.Damage;
+
+                    }
+                    else if (itemName == "random")
+                    {
+                        Player.AddToInv(Entity.GetRandomItems()[0]);
+                        Console.WriteLine("You got a new item");
+                        break;
+                    }
+                    else if (itemIndex != -1 && Player.Inventory.Count != 0)
+                    {
+                        damage = ((Item)Player.Inventory[itemIndex]).GetDMG();
+                        Player.DelFromInvIndex(itemIndex);
                     }
                     else
                     {
+                        Console.WriteLine("Choose a valid option");
+                        continue;
                     }
+
+
+                    if (damage < 0)
+                    {
+                        Player.TakeDMG(damage);
+                        Console.WriteLine($"You healed {damage} HP");
+                    }
+                    else
+                    {
+                        ((Character)MapRooms[CurrentRoom].Inventory[monsterIndex]).TakeDMG(damage);
+                        Console.WriteLine($"You dealt {damage} damage");
+                    }
+                    
+                    
+                    int randomMonster = rng.Next(MapRooms[CurrentRoom].Inventory.Count);
+                    Character monster = (Character)MapRooms[CurrentRoom].Inventory[randomMonster];
+                    
+                    Console.WriteLine($"A {monster.Name} comes back with a random item.");
+                    if (monster.Inventory.Count != 0)
+                    {
+                        damage = ((Item)monster.Inventory[rng.Next(monster.Inventory.Count)]).GetDMG();
+                        MapRooms[CurrentRoom].Inventory[randomMonster].DelFromInvIndex(itemIndex);
+                    }
+                    else
+                    {
+                        damage = ((Character)MapRooms[CurrentRoom].Inventory[monsterIndex]).Damage;
+                    }
+                    if (damage < 0)
+                    {
+                        ((Character)MapRooms[CurrentRoom].Inventory[monsterIndex]).TakeDMG(damage);
+                        Console.Write($"Monster healed {damage} HP");
+                    }
+                    else
+                    {
+                        Player.TakeDMG(damage);
+                        Console.WriteLine($"You took {damage} HP");
+                    }
+                    
                 }
                 else {
                     Console.WriteLine("Choose a valid option");
                     continue;
                 }
-
-                    break;
-            }
-
-
+            
             return;
-
-            //if (items.Count != 0)
-            //{
-            //    Console.WriteLine($"There are {items.Count} items, which do you want to pick up: {allRooms[currentRoom].ItemsContents()}");
-            //    string selectedItem = Console.ReadLine();
-
-            //    bool found = false;
-            //    foreach (string item in items)
-            //    {
-            //        if (selectedItem.Equals(item, StringComparison.OrdinalIgnoreCase))
-            //        {
-            //            found = true;
-            //            allRooms[currentRoom].DeleteItem(item);
-            //            player.PickUpItem(item);
-            //            break;
-            //        }
-            //    }
-            //    if (!found)
-            //    {
-            //        Console.WriteLine("Choose a valid option");
-            //    }
             }
         public void Start()
         {
             bool playing = true;
             while (playing)
             {
-                Console.WriteLine($"\nWhat would you like to do {Player.Name}?\n1. View room's description\n2. Display your status\n3. Enter Room\n4. Move Rooms\n5. End Game");
+                Console.WriteLine($"\nWhat would you like to do {Player.Name}?\nTo use items go into a room\n\n1. Display your status\n2. View room's description\n3. Enter Room\n4. Move Rooms\n5. End Game");
                 int.TryParse(Console.ReadLine(), out int choice);
                 Console.WriteLine();
                 switch (choice)
                 {
                     case 1:
-                        MapRooms[CurrentRoom].GetDescription();
+                        Player.GetDescription();
                         break;
 
                     case 2:
-                        Player.GetDescription();
+                        MapRooms[CurrentRoom].GetDescription();
                         break;
 
                     case 3:

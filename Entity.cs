@@ -1,17 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DungeonExplorer
 {
     public abstract class Entity
     {
-        public string Name { get; private set; }
-        public List<Entity> Inventory { get; }
+        public string Name;
+        public List<Entity> Inventory;
 
         public Entity(string name, List<Entity> entities = null)
         {
             Name = name;
             Inventory = entities ?? new List<Entity>();
+        }
+
+        public static List<Entity> GetRandomItems()
+        {
+            List<Entity> itemTemplate = new List<Entity>
+            {
+                new Weapon("Sword", 30),
+                new Weapon("Gun", 50),
+                new Potion("Apple", 10),
+                new Potion("Steak", 30)
+            };
+
+            Random rng = new Random();
+            return itemTemplate.OrderBy(x => rng.Next()).Take(rng.Next(itemTemplate.Count)).ToList();
         }
 
         public virtual void GetDescription() { }
@@ -25,11 +40,12 @@ namespace DungeonExplorer
             }
             return false;
         }
-        public bool DelFromInv(Entity entity)
+        public bool DelFromInvIndex(int index)
         {
-            if (entity != null)
+            if (index >= 0 && index < Inventory.Count)
             {
-                return Inventory.Remove(entity);
+                Inventory.RemoveAt(index);
+                return true;
             }
             return false;
         }
@@ -39,7 +55,7 @@ namespace DungeonExplorer
             {
                 for (int i = 0; i < Inventory.Count; i++)
                 {
-                    if (Inventory[i].Name == name)
+                    if (Inventory[i].Name.ToLower() == name)
                     {
                         return i;
                     }
@@ -47,26 +63,6 @@ namespace DungeonExplorer
             }
             return -1;
         }
-        public Entity ReturnInventoryEntity(string name)
-        {
-            if (Inventory.Count != 0)
-            {
-                for (int i = 0; i < Inventory.Count; i++)
-                {
-                    if (Inventory[i].Name == name)
-                    {
-                        return Inventory[i];
-                    }
-                }
-            }
-            return null;
-        }
-        public List<Entity> ReturnInventory()
-        {
-            return Inventory;
-        }
-
-
         public void InventoryContents()
         {
             if (Inventory.Count != 0)

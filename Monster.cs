@@ -8,6 +8,7 @@ namespace DungeonExplorer
         public Zombie(string name, int health, int damage, List<Entity> entity) : base(name, health, damage, entity) { }
         public override void GetDescription()
         {
+            Console.WriteLine();
             Console.WriteLine($"Creeper: {Name}, Health: {Health}, Damage: {Damage}");
             InventoryContents();
         }
@@ -17,6 +18,7 @@ namespace DungeonExplorer
         public Creeper(string name, int health, int damage, List<Entity> entity) : base(name, health, damage, entity) { }
         public override void GetDescription()
         {
+            Console.WriteLine();
             Console.WriteLine($"Zombie: {Name}, Health: {Health}, Damage: {Damage}");
             InventoryContents();
         }
