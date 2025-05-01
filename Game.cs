@@ -113,7 +113,8 @@ namespace DungeonExplorer
                 string monsterName = CleanInput();
 
                 int monsterIndex = MapRooms[CurrentRoom].ReturnInventoryIndex(monsterName);
-                if (monsterIndex != -1){
+                if (monsterIndex != -1)
+                {
                     Console.WriteLine();
                     Player.GetDescription();
                     Console.Write("What item do you want to use? (Choose an item or 'random'/'hands'/'exit') > ");
@@ -121,7 +122,7 @@ namespace DungeonExplorer
                     int itemIndex = Player.ReturnInventoryIndex(itemName);
                     int damage;
 
-                    if (itemName == "exit") 
+                    if (itemName == "exit")
                     {
                         break;
                     }
@@ -151,18 +152,18 @@ namespace DungeonExplorer
                     if (damage < 0)
                     {
                         Player.TakeDMG(damage);
-                        Console.WriteLine($"You healed {damage} HP");
+                        Console.WriteLine($"You healed {-damage} HP");
                     }
                     else
                     {
                         ((Character)MapRooms[CurrentRoom].Inventory[monsterIndex]).TakeDMG(damage);
                         Console.WriteLine($"You dealt {damage} damage");
                     }
-                    
-                    
+
+
                     int randomMonster = rng.Next(MapRooms[CurrentRoom].Inventory.Count);
                     Character monster = (Character)MapRooms[CurrentRoom].Inventory[randomMonster];
-                    
+
                     Console.WriteLine($"A {monster.Name} comes back with a random item.");
                     if (monster.Inventory.Count != 0)
                     {
@@ -176,22 +177,24 @@ namespace DungeonExplorer
                     if (damage < 0)
                     {
                         ((Character)MapRooms[CurrentRoom].Inventory[monsterIndex]).TakeDMG(damage);
-                        Console.Write($"Monster healed {damage} HP");
+                        Console.Write($"Monster healed {-damage} HP");
                     }
                     else
                     {
                         Player.TakeDMG(damage);
                         Console.WriteLine($"You took {damage} HP");
                     }
-                    
+
                 }
-                else {
+                else
+                {
                     Console.WriteLine("Choose a valid option");
                     continue;
                 }
-            
-            return;
+
+                return;
             }
+        }
         public void Start()
         {
             bool playing = true;
