@@ -40,15 +40,6 @@ namespace DungeonExplorer
             }
             return false;
         }
-        public bool DelFromInv(Entity entity)
-        {
-            if (entity != null)
-            {
-                Inventory.Remove(entity);
-                return true;
-            }
-            return false;
-        }
         public bool DelFromInvIndex(int index)
         {
             if (index >= 0 && index < Inventory.Count)
