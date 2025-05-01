@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace DungeonExplorer
 {
-    internal class Game
+    public class Game
     {
         public int CurrentRoom;
         public int MaxRooms;
@@ -18,7 +18,6 @@ namespace DungeonExplorer
             Player = player;
             MaxRooms = rooms;
             CurrentRoom = 0;
-            Debug.Assert(0 < MaxRooms, $"{MaxRooms} rooms were generated");
             InitializeGame();
         }
         private void InitializeGame()

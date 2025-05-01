@@ -31,27 +31,32 @@ namespace DungeonExplorer
 
         public virtual void GetDescription() { }
 
-        public void AddToInv(Entity entity)
+        public bool AddToInv(Entity entity)
         {
             if (entity != null)
             {
                 Inventory.Add(entity);
+                return true;
             }
-            else
-            {
-                Console.WriteLine("Couldn't Add");
-            }
+            return false;
         }
-        public void DelFromInvIndex(int index)
+        public bool DelFromInv(Entity entity)
+        {
+            if (entity != null)
+            {
+                Inventory.Remove(entity);
+                return true;
+            }
+            return false;
+        }
+        public bool DelFromInvIndex(int index)
         {
             if (index >= 0 && index < Inventory.Count)
             {
                 Inventory.RemoveAt(index);
+                return true;
             }
-            else
-            {
-                Console.WriteLine("Couldn't Delete");
-            }
+            return false;
         }
         public int ReturnInventoryIndex(string name)
         {
